@@ -20,3 +20,25 @@
 - **Changes Made**: Implemented a complete Pygame app in main.py that shows 10 colored squares moving with random velocities and bouncing on window boundaries.
 - **Context and Reasons for Changes**: User explicitly requested a direct implementation and temporary suspension of Socratic mode for this task.
 
+### **New Interaction**
+- **Agent Version**: 2.2
+- **Date**: 30-03-2026 14:54
+- **User**: anh-duc.vo@epita.fr
+- **Prompt**: update the joirnal
+- **CoPilot Mode**: Agent
+- **CoPilot Model**: GPT-5.3-Codex
+- **Socratic Mode**: ON
+- **Changes Made**: Appended a new journal entry to JOURNAL.md.
+- **Context and Reasons for Changes**: User requested updating the journal, so this interaction was logged directly in the repository journal.
+
+### **New Interaction**
+- **Agent Version**: 2.2
+- **Date**: 03-04-2026 19:49
+- **User**: anh-duc.vo@epita.fr
+- **Prompt**: Update the journal
+- **CoPilot Mode**: Agent
+- **CoPilot Model**: GPT-5.3-Codex
+- **Socratic Mode**: ON
+- **Changes Made**: Appended a new journal entry to JOURNAL.md with the user's request to update the journal.
+- **Context and Reasons for Changes**: User requested a journal update after experimenting with sound effects and simulation features.
+

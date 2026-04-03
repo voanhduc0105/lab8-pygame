@@ -1,14 +1,14 @@
 # Project Report: AI-Assisted Development
 
 ## 1. Initial Approach
-* **Understanding:** Briefly describe your strategy for tackling the requirements.
-* **Assumptions:** What did you assume about the project before starting?
+* **Understanding:** Randomly think of features that I can add to the game until i have exhausted all of my features. Then, ask the AI if it can think of any
+* **Assumptions:** I assumed it was hard since I have not worked with pygames before. However, it was not bad after doing it.
 
 ## 2. Prompting & AI Interaction
-* **Successes:** What types of prompts or context worked best for you?
-* **Failures:** Describe specific instances where CoPilot failed (hallucinations, over-engineering, or logical errors).
-* **Analysis:** Why do you think these failures happened, and how did they impact your progress?
+* **Successes:** Asking the chat what code does what, and for slight guidance for things I did not know before
+* **Failures:** So far, no fails
+* **Analysis:** Again, no fails
 
 ## 3. Key Learnings
-* **Technical Skills:** What CS concepts or tools did you discover or master during this project?
-* **AI Workflow:** How will you change your use of AI tools in your next project?
+* **Technical Skills:** Using Copilot responsibly and some maths - actual geometry to calculate the square collision.
+* **AI Workflow:** I will try to use AI a bit more to ask about things I have not known before, since doing research on an entire library for a simple implementation is time consuming
