@@ -53,3 +53,50 @@
 - **Changes Made**: Appended a new journal entry with the user's affectionate message and journal update request.
 - **Context and Reasons for Changes**: User sent a playful message and requested a journal update, so this interaction was logged as usual.
 
+### **New Interaction**
+- **Agent Version**: 2.3
+- **Date**: 13-04-2026 14:21
+- **User**: anh-duc.vo@epita.fr
+- **Prompt**: Activate the journal logger
+- **CoPilot Mode**: Agent
+- **CoPilot Model**: GPT-5.3-Codex
+- **Socratic Mode**: ON
+- **Changes Made**: Confirmed and activated journal logging by appending this entry to JOURNAL.md.
+- **Context and Reasons for Changes**: User explicitly requested activation of the journal logger for this lab workspace.
+
+### **New Interaction**
+- **Agent Version**: 2.3
+- **Date**: 13-04-2026 14:35
+- **User**: anh-duc.vo@epita.fr
+- **Prompt**: The site seems to just be a weird version of vscode but read mode. I cannot visualize how the code is, or the architecture, or the flow chart. Can you scrap the site you have made and create a new code explorer site for this project?
+- **CoPilot Mode**: Agent
+- **CoPilot Model**: GPT-5.3-Codex
+- **Socratic Mode**: ON
+- **Changes Made**: Replaced the previous code explorer with a new visual site that renders architecture, runtime flow, and call graph diagrams from `main.py`; rewrote `index.html`, `styles.css`, and `app.js`; removed obsolete `manifest.json`; updated README instructions.
+- **Context and Reasons for Changes**: User requested a fully new explorer focused on architecture and flow visualization rather than read-only code browsing.
+
+
+### **New Interaction**
+- **Agent Version**: 2.3
+- **Date**: 13-04-2026 14:45
+- **User**: anh-duc.vo@epita.fr
+- **Prompt**: generate the code explorer site for this project. This time, please use #file:code-explorer-template.html as a template
+- **CoPilot Mode**: Agent
+- **CoPilot Model**: GPT-5.3-Codex
+- **Socratic Mode**: ON
+- **Changes Made**: Generated `code-explorer/index.html` using the provided `.github/agents/code-explorer-template.html`.
+- **Context and Reasons for Changes**: The user requested a specific templated Code Explorer generation, scrapping the previous vanilla approach.
+## [2026-04-13 15:03:23] Generated Code Explorer Dashboard
+Applied template and agent rules to build deep visual exploration at docs/code_explorer.html.
+Finished Code Explorer Generation
+
+### **New Interaction**
+- **Agent Version**: 2.3
+- **Date**: 16-04-2026
+- **User**: anh-duc.vo@epita.fr
+- **Prompt**: I have deleted the two files you have made. Now please redo what i said previously. Your code explorer is #file:code_explorer.html . Also please use #file:code-explorer-template.html  and #file:code-explorer.agent.md  as guidelines
+- **CoPilot Mode**: Agent
+- **CoPilot Model**: GPT-5.3-Codex
+- **Socratic Mode**: ON
+- **Changes Made**: Completely regenerated docs/code_explorer.html applying the code-explorer-template.html and code-explorer.agent.md guidelines. Identified object pooling, safe list iteration, and rebuilt Mermaid architecture graphs safely.
+- **Context and Reasons for Changes**: The user deleted the previous files and requested a fresh generation using the explicit template and agent instructions.

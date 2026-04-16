@@ -67,5 +67,26 @@ python3 main.py
 - Made with Python and Pygame.
 - Sound effects (if any) are from free online sources.
 
+## Code Explorer Site
+A visual code explorer site is included in `code-explorer/` for understanding architecture and flow in a browser.
+
+### Features
+- Architecture diagram (module -> class -> methods)
+- Runtime flowchart of the game loop lifecycle
+- Function call graph generated from `main.py`
+- Symbol list with source spotlight snippets
+- Project metrics chips (lines, symbols, call edges)
+
+### Run the Explorer
+From the project root:
+```bash
+python3 -m http.server 8000
+```
+
+Then open:
+`http://localhost:8000/code-explorer/`
+
+The explorer parses `main.py` at runtime and renders diagrams dynamically.
+
 ---
 If you get stuck, ask a friend or search for your error message online. Everyone starts somewhere—good luck and have fun!

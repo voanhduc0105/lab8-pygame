@@ -4,6 +4,9 @@ import pygame
 
 import math
 
+import time
+
+START_TIME = time.time()
 WINDOW_WIDTH = 1280
 WINDOW_HEIGHT = 720
 BACKGROUND_COLOR = (20, 20, 30)
@@ -13,11 +16,21 @@ FPS = 60
 # Substep to do better checks
 SUBSTEP = 4
 
+# each squares will now have an id to prevent wrong deletion
+ID = 0
+
+# pause
+pause = False
+toggle_roe_flag = False
+toggle_vector_flag = False
 
 class Square:
 	cap = 40
 	pity = 0
 	def __init__(self) -> None:
+		global ID
+		self.id = ID
+		ID += 1
 		self.square_size = random.randint(10, WINDOW_WIDTH//30)
 		self.x = random.randint(0, WINDOW_WIDTH - self.square_size)
 		self.y = random.randint(0, WINDOW_HEIGHT - self.square_size)
@@ -32,29 +45,64 @@ class Square:
 		)
 		self.pulse = 0
 		self.tired = 0
+		#Life is proportionate to size. however, min mult is x0.5
+		self.max_life = round(FPS*60*(0.5 + 0.5 * (self.square_size / (WINDOW_WIDTH // 30))), 2)
+		# small gets 0.5x, max size get 1x
+		self.life = self.max_life
+		
+		# same scaling logic here
+		self.dmg = 10.0 * round((0.5 + 0.5 * (self.square_size / (WINDOW_WIDTH // 30))), 2)
 
 	def getrect(self):
 		return pygame.Rect(self.x, self.y, self.square_size, self.square_size)
 
 	@staticmethod
-	def squarecreation(listofsquares):
-		new = Square()
-		listofsquares.append(new)
-		return listofsquares
+	def squarecreation(listofsquares, disabledsquares):
+		if len(disabledsquares) == 0:
+			new = Square()
+			listofsquares.append(new)
+			return listofsquares
+		else:
+			# always take the first item in the list and randomize everything
+			# ... this might mean having to copy the __init__ thing...
+			# please ignore this
+			# however, we dont change the id
+			#
+
+			disabledsquares[0].square_size = random.randint(10, WINDOW_WIDTH//30)
+			disabledsquares[0].x = random.randint(0, WINDOW_WIDTH - disabledsquares[0].square_size)
+			disabledsquares[0].y = random.randint(0, WINDOW_HEIGHT - disabledsquares[0].square_size)
+			disabledsquares[0].topspd = (25/disabledsquares[0].square_size)*3
+			disabledsquares[0].minspd = (25/disabledsquares[0].square_size)
+			disabledsquares[0].vx = random.choice([-1, 1]) * random.uniform(disabledsquares[0].minspd, disabledsquares[0].topspd)
+			disabledsquares[0].vy = random.choice([-1, 1]) * random.uniform(disabledsquares[0].minspd, disabledsquares[0].topspd)
+			disabledsquares[0].color = (
+				random.randint(60, 255),
+				random.randint(60, 255),
+				random.randint(60, 255),
+			)
+			disabledsquares[0].pulse = 0
+			disabledsquares[0].tired = 0
+			disabledsquares[0].max_life = round(FPS*60*(0.5 + 0.5 * (disabledsquares[0].square_size / (WINDOW_WIDTH // 30))), 2)
+			disabledsquares[0].life = disabledsquares[0].max_life
+			disabledsquares[0].dmg = 10.0 * round((0.5 + 0.5 * (disabledsquares[0].square_size / (WINDOW_WIDTH // 30))), 2)
+			
+			#
+			# Now transfer that item and append it to listofsquares
+			listofsquares.append(disabledsquares.pop(0))
+	
+	def bidfarewell(self, listofsquares, disabledsquares):
+		# move it to disabledsquares.
+		listofsquares.remove(self)
+		disabledsquares.append(self)
 
 	def i_want_to_KILL_you(self, other: 'Square', listofsquares: list):
-		if random.randint(1, 250) == 1:
-			#kill smaller square, or
-			if self.square_size <= other.square_size:
-				
-				listofsquares.remove(self)
-				del self
-			else:
-				listofsquares.remove(other)
-				del other
+		# both squares will now reduce each other's health
+		# i will still keep the name cuz its funny
+		self.life -= other.dmg
+		other.life -= self.dmg
 
-
-	def squarecollision(self, other, listofsquares):
+	def squarecollision(self, other, listofsquares, disabledsquares):
 		a = self.getrect()
 		b = other.getrect()
 		if a.colliderect(b):
@@ -64,9 +112,9 @@ class Square:
 			overlap_y = min(a.bottom, b.bottom) - max(a.top, b.top)
 			if overlap_x < overlap_y:
 				if self.cap > len(listofsquares):
-					if random.randint(1, 100-Square.pity) == 1:
+					if random.randint(1, 25-Square.pity) == 1:
 						Square.pity = 0
-						self.squarecreation(listofsquares)
+						self.squarecreation(listofsquares, disabledsquares)
 					else:
 						Square.pity += 1
 				
@@ -121,6 +169,8 @@ class Square:
 	def flee(self, other: 'Square'):
 		# if the self square is the smaller square and satisfies the criteria
 		# we do not need to flip the condition since the for loop in main is already doing it
+		if self.tired > 0:
+			return
 		selfcenter = [self.x + self.square_size/2, self.y + self.square_size/2]
 		othercenter = [other.x + other.square_size/2, other.y + other.square_size/2]
 		if self.square_size < other.square_size:
@@ -138,7 +188,12 @@ class Square:
 		else:
 			pass
 
-	def move(self, steps) -> None:
+	def move(self, steps, listofsquares, disabledsquares) -> None:
+		# if the square doesnt exist, simply dont move it or anything.
+		if self.life <= 0:
+			self.bidfarewell(listofsquares, disabledsquares)
+			return
+		self.life -= 1/steps
 		if random.randint(1, 1000) == 67 and self.tired == 0:
 			# At random, squares stops to rest
 			self.tired = random.randint(FPS, 3*FPS)
@@ -146,6 +201,7 @@ class Square:
 			self.tired -= 1
 		else:
 			# True speed vector, which is the hypothneuse or something from the triangle made from vx and vy
+			
 			truespd = math.hypot(self.vx, self.vy)
 			if truespd > self.topspd+5.0:
 				scale = (self.topspd + 5)/ truespd
@@ -155,18 +211,21 @@ class Square:
 				scale = (self.topspd + 5)/ truespd
 				self.vx *= scale
 				self.vy *= scale
-
-			if random.randint(1, 500) == 1:
+				if random.randint(1, 500) == 1:
+				
 				# confused, refert movement
-				self.vx *= -1
-				self.vy *= -1
+					self.vx *= -1
+					self.vy *= -1
+			
 			# We divide the movement into smaller steps so that faster moving squares
 			# Don't pass through the collision check
 			self.x += self.vx / steps
 			self.y += self.vy / steps
-		
-		# Bounce on screen edges by reversing direction.
-	def bordercollision(self, listofsquares):
+			# reduce life by 1 / step so square lives for like 120s or less secs
+			
+			# Bounce on screen edges by reversing direction.
+	
+	def bordercollision(self, listofsquares, disabledsquares):
 		if self.x <= 0 or self.x >= WINDOW_WIDTH - self.square_size:
 			self.pulse = FPS//3
 			self.vx *= -1
@@ -174,7 +233,7 @@ class Square:
 			if self.cap > len(listofsquares):
 				if random.randint(1, 100-Square.pity) == 1:
 					Square.pity = 0
-					self.squarecreation(listofsquares)
+					self.squarecreation(listofsquares, disabledsquares)
 				else:
 					self.pity += 1
 
@@ -185,64 +244,142 @@ class Square:
 			if self.cap > len(listofsquares):
 				if random.randint(1, 100-Square.pity) == 1:
 					Square.pity = 0
-					self.squarecreation(listofsquares)
+					self.squarecreation(listofsquares, disabledsquares)
 				else:
 					self.pity += 1
 
-	
-
 	def draw(self, surface: pygame.Surface) -> None:
-		# Using pulse boost instead of pulse for easier control of brightness. Pulse_boost spans from 0.0 to 1.0		
-		pulse_boost = self.pulse / (FPS//3)
-		state_color = tuple(min(255, int(c + pulse_boost*50)) for c in self.color)
-		pygame.draw.rect(surface, state_color, (self.x, self.y, self.square_size, self.square_size))
-		if self.pulse > 0:
-			self.pulse -= 1
+		# Using pulse boost instead of pulse for easier control of brightness. Pulse_boost spans from 0.0 to 1.0	
+		# same with this, if life <0, dont draw.
+		if self.life <= 0:
+			return
+		else:
+			# the lower the health, the more towards white the square is.
+			pulse_boost = self.pulse / (FPS//3)
+			life_ratio = self.life / self.max_life
+			state_color = tuple(min(255, int(c + pulse_boost*50 + (1-life_ratio)*(255-c))) for c in self.color)
+			pygame.draw.rect(surface, state_color, (self.x, self.y, self.square_size, self.square_size))
+			if self.pulse > 0:
+				self.pulse -= 1
+	
+def draw_pause(screen, surface, font, toggle_roe_flag, toggle_vector_flag):
+	pygame.draw.rect(surface, (128, 128, 128, 150), [0,0, WINDOW_WIDTH, WINDOW_HEIGHT])
+	button_size = [300, 75] # width, height
+	reset = pygame.draw.rect(surface, 'white', [WINDOW_WIDTH/2-button_size[0]/2, WINDOW_HEIGHT*1/6, button_size[0], button_size[1]], 0, 10)
+	toggle_vector = pygame.draw.rect(surface, 'white', [WINDOW_WIDTH/2-button_size[0]/2, WINDOW_HEIGHT*2.1/5, button_size[0], button_size[1]], 0, 10)
+	toggle_roe = pygame.draw.rect(surface, 'white', [WINDOW_WIDTH/2-button_size[0]/2, WINDOW_HEIGHT*2/3, button_size[0], button_size[1]], 0, 10)
+	surface.blit(font.render('Reset Squares', True, 'black'), (WINDOW_WIDTH/2-button_size[0]/3.5, WINDOW_HEIGHT*1/6+button_size[1]/3))
+	if toggle_vector_flag:
+		surface.blit(font.render('Square Vectors: On', True, 'black'), (WINDOW_WIDTH/2-button_size[0]/2.5, WINDOW_HEIGHT*2.1/5+button_size[1]/3))
+	else:
+		surface.blit(font.render('Square Vectors: Off', True, 'black'), (WINDOW_WIDTH/2-button_size[0]/2.5, WINDOW_HEIGHT*2.1/5+button_size[1]/3))
+	if toggle_roe_flag:
+		surface.blit(font.render('Radius Of Effect: On', True, 'black'), (WINDOW_WIDTH/2-button_size[0]/2.4, WINDOW_HEIGHT*2/3+button_size[1]/3))
+	else:
+		surface.blit(font.render('Radius Of Effect: Off', True, 'black'), (WINDOW_WIDTH/2-button_size[0]/2.4, WINDOW_HEIGHT*2/3+button_size[1]/3))
+	screen.blit(surface, (0,0))
+	return reset, toggle_roe, toggle_vector
+
 
 
 
 def main() -> None:
 	pygame.init()
 	screen = pygame.display.set_mode((WINDOW_WIDTH, WINDOW_HEIGHT))
-	pygame.display.set_caption("Random Moving Squares")
+	surface = pygame.Surface((WINDOW_WIDTH, WINDOW_HEIGHT), pygame.SRCALPHA)
+	pygame.display.set_caption("Extra Random Moving Squares")
 	clock = pygame.time.Clock()
 	font = pygame.font.SysFont(None, 36)
 	squares = [Square() for _ in range(SQUARE_COUNT)]
+	disabled_squares = []
 	running = True
 
 	while running:
-		mousex, mousey = pygame.mouse.get_pos()
-
+		global pause
+		global toggle_roe_flag, toggle_vector_flag
+		# current_time = time.time() - START_TIME
+		# mousex, mousey = pygame.mouse.get_pos()
+		if len(squares) == 0:
+			# out of squares, you just lose
+			running = False
 		for event in pygame.event.get():
 			if event.type == pygame.QUIT:
 				running = False
+			if event.type == pygame.KEYDOWN:
+				if event.key == pygame.K_ESCAPE or event.key == pygame.K_p:
+					if pause:
+						pause = False
+					else:
+						pause = True
+			if event.type == pygame.MOUSEBUTTONDOWN and pause:
+				if reset.collidepoint(event.pos):
+					if len(squares) >= 15:
+						for i in range(len(squares)):
+							if i < 15:
+								# keep the first few squares, however, reset max health
+								squares[i].life = squares[i].max_life
+							else:
+								squares[15].bidfarewell(squares, disabled_squares)
+					if len(squares) < 15:
+						for i in range(len(squares)):
+							squares[i].life = squares[i].max_life
+						for i in range(15 - len(squares)):
+							squares[i].squarecreation(squares, disabled_squares)
+				if toggle_roe.collidepoint(event.pos):
+					if toggle_roe_flag:
+						toggle_roe_flag = False
+					else:
+						toggle_roe_flag = True
+				if toggle_vector.collidepoint(event.pos):
+					if toggle_vector_flag:
+						toggle_vector_flag = False
+					else:
+						toggle_vector_flag = True
+				
 
-		# Repeat SUBSTEP amount of times to accomodate for the change in movement
-		for _ in range(SUBSTEP):
-			for square in squares:
-				square.move(SUBSTEP)
-				square.bordercollision(squares)
-			
-		# the flags are redundant as theres only 1 check needed
-		for squarea in squares:
-			for squareb in squares:
-				if squarea != squareb:
-					squarea.squarecollision(squareb, squares)	
-					squarea.flee(squareb)	
+
+		if not pause: 
+			for _ in range(SUBSTEP):
+				for square in list(squares):
+					square.move(SUBSTEP, squares, disabled_squares)
+					if square in squares:
+						square.bordercollision(squares, disabled_squares)
+				
+			# the flags are redundant as theres only 1 check needed
+			for squarea in list(squares):
+				for squareb in list(squares):
+					if squarea != squareb and squarea in squares and squareb in squares:
+						squarea.squarecollision(squareb, squares, disabled_squares)
+						squarea.flee(squareb)
+		
 
 		screen.fill(BACKGROUND_COLOR)
-		for square in squares:
-			if pygame.Rect.collidepoint(pygame.Rect(square.x, square.y, square.square_size, square.square_size), mousex, mousey):
-				center = (square.x + square.square_size/2, square.y + square.square_size/2)
-				pygame.draw.circle(screen, (79, 39, 39), center, square.square_size*3, 0)
+		if not pause:
+			if toggle_roe_flag or toggle_vector_flag:
+				roe_surface = pygame.Surface((WINDOW_WIDTH, WINDOW_HEIGHT), pygame.SRCALPHA)
+				for square in squares:
+					center = (square.x + square.square_size/2, square.y + square.square_size/2)
+					if toggle_roe_flag:
+						pygame.draw.circle(roe_surface, (*square.color, 100), center, square.square_size*3, 3)
+					# use line
+					# aint using ai for this dawg this is simple enough. Also no arrows.
+					if toggle_vector_flag:
+						pseudo_destination = (center[0] + square.vx*square.square_size*1.2* (0.25 + 0.5 * (square.square_size / (WINDOW_WIDTH // 30))), 
+							center[1] + square.vy*square.square_size*1.2* (0.25 + 0.5 * (square.square_size / (WINDOW_WIDTH // 30))))
+						pygame.draw.line(roe_surface, (*square.color, 100), center, pseudo_destination, 3)
+				screen.blit(roe_surface,(0, 0))
+
 		for square in squares:
 			# whatever is on top needs to be drawn later
 			# This is in another loop to fix a bug where the AOE effect is on top of the squares
 			square.draw(screen)
 		text1 = font.render(f"Squares: {len(squares)} / {Square.cap}", True, (255, 255, 255))
-		text2 = font.render(f"Spawn Chance: {round((1/(100-Square.pity))*100, 3)}%", True, (255, 255, 255))
+		text2 = font.render(f"Spawn Chance: {round((1/(25-Square.pity))*100, 3)}%", True, (255, 255, 255))
+		#text2 = font.render(f"Time: {current_time} seconds", True, (255,255,255))
 		screen.blit(text1, (10, 10))
-		screen.blit(text2, (10, 10 + font.get_height()))		
+		screen.blit(text2, (10, 10 + font.get_height()))
+		if pause:
+			reset, toggle_roe, toggle_vector = draw_pause(screen, surface, font, toggle_roe_flag, toggle_vector_flag)	
 		pygame.display.flip()
 		clock.tick(FPS)
 
