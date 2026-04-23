@@ -18,3 +18,10 @@
 ## Fixes
     - Fix the issue where vector keeps being 'flee' when pausing inside an ROE
     - Fix ROE effect to be more appealing
+
+# Update 1.3: Chase update
+## New features
+    - Added chase feature. When a small square is near a big one, the bigger square chases it down
+## Fixes
+    - Changed frame based movement into time based movement
+    - Massively buffs the rate for the squares to spawn
