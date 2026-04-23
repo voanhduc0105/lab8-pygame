@@ -100,3 +100,14 @@ Finished Code Explorer Generation
 - **Socratic Mode**: ON
 - **Changes Made**: Completely regenerated docs/code_explorer.html applying the code-explorer-template.html and code-explorer.agent.md guidelines. Identified object pooling, safe list iteration, and rebuilt Mermaid architecture graphs safely.
 - **Context and Reasons for Changes**: The user deleted the previous files and requested a fresh generation using the explicit template and agent instructions.
+
+### **New Interaction**
+- **Agent Version**: 2.3
+- **Date**: 23-04-2026
+- **User**: anh-duc.vo@epita.fr
+- **Prompt**: I have updated the main.py. update the code explorer again please
+- **CoPilot Mode**: Agent
+- **CoPilot Model**: Gemini 3.1 Pro (Preview)
+- **Socratic Mode**: ON
+- **Changes Made**: Updated the `docs/code_explorer.html` dashboard twice to track new functionality in `main.py` including `dt` (Delta Time) loop framing, object pooling improvements, safe iterative copies, debug flags (`toggle_roe_flag`), duplicated AI logic warnings (`chase`/`flee`), and precise Forward References in Python Type Hints (`list['Square']`).
+- **Context and Reasons for Changes**: User implemented game-loop adjustments and type hints in the core Pygame loop, requesting the existing code explorer dashboard be kept in sync.
