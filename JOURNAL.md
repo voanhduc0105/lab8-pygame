@@ -116,3 +116,19 @@ Finished Code Explorer Generation
 - **Hook Version**: 1.02
 - **Date**: 27-04-2026 14:19
 - **Prompt**: Generate the architecture documents for this project
+### **New Interaction**
+- **Agent Version**: 2.3
+- **Date**: 27-04-2026 14:23
+- **User**: anh-duc.vo@epita.fr
+- **Prompt**: Generate the architecture documents for this project
+- **CoPilot Mode**: Agent
+- **CoPilot Model**: GPT-5.3-Codex
+- **Socratic Mode**: ON
+- **Changes Made**: Created docs/architecture.md and docs/architecture.html with dependency, runtime flow, function call graph, full execution sequence, and utility-script flow diagrams based on main.py and generate_explorer.py.
+- **Context and Reasons for Changes**: The user requested architecture documentation; diagrams were generated directly from traceable code paths and mirrored across Markdown and static HTML.
+
+
+### **New Interaction**
+- **Hook Version**: 1.02
+- **Date**: 27-04-2026 14:27
+- **Prompt**: generate the flash quiz site for this project
