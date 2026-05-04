@@ -1,0 +1,205 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Project Architecture</title>
+  <style>
+    :root {
+      --bg: #f7f8fb;
+      --panel: #ffffff;
+      --text: #1f2937;
+      --muted: #4b5563;
+      --border: #d1d5db;
+      --accent: #0f766e;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(180deg, #f4f7fb 0%, #eef2f9 100%);
+      color: var(--text);
+      line-height: 1.5;
+    }
+    .wrap {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 24px;
+    }
+    h1, h2 {
+      margin: 0 0 12px;
+    }
+    h1 {
+      font-size: 2rem;
+      color: #0b3d3a;
+    }
+    h2 {
+      font-size: 1.3rem;
+      color: #0f172a;
+      margin-top: 28px;
+    }
+    p, li {
+      color: var(--muted);
+    }
+    .card {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 18px;
+      margin: 14px 0;
+      box-shadow: 0 6px 24px rgba(15, 23, 42, 0.05);
+    }
+    .mermaid {
+      overflow-x: auto;
+      padding: 8px;
+    }
+    .pill {
+      display: inline-block;
+      padding: 4px 10px;
+      border-radius: 999px;
+      background: #ccfbf1;
+      color: #115e59;
+      border: 1px solid #99f6e4;
+      font-size: 0.8rem;
+      margin-bottom: 10px;
+    }
+    code {
+      background: #eef2ff;
+      border: 1px solid #c7d2fe;
+      border-radius: 6px;
+      padding: 0 5px;
+    }
+    @media (max-width: 700px) {
+      .wrap { padding: 16px; }
+      h1 { font-size: 1.6rem; }
+    }
+  </style>
+</head>
+<body>
+  <main class="wrap">
+    <h1>Architecture Documentation</h1>
+    <p>This page reflects architecture extracted from <code>main.py</code> and <code>generate_explorer.py</code>.</p>
+
+    <section class="card">
+      <span class="pill">Module Dependency Graph</span>
+      <div class="mermaid">
+graph LR
+    MAIN["main.py"] --> PYG["pygame"]
+    MAIN --> RNG["random"]
+    MAIN --> MATH["math"]
+    MAIN --> TIME["time"]
+    EXPL["generate_explorer.py"] --> JSON["json"]
+    EXPL --> OS["os"]
+      </div>
+    </section>
+
+    <section class="card">
+      <span class="pill">High-Level Runtime Flow</span>
+      <div class="mermaid">
+flowchart TD
+    START["Program Start"] --> INIT["main(): pygame init and window setup"]
+    INIT --> SEED["Create initial squares list"]
+  SEED --> LOOP{"running flag true?"}
+    LOOP -- "Yes" --> TICK["Frame tick: dt = clock.tick(FPS) / 1000"]
+    TICK --> EVENTS["Process pygame events"]
+  EVENTS --> PAUSE{"pause active?"}
+    PAUSE -- "No" --> UPDATE["SUBSTEP movement and border collisions"]
+    UPDATE --> PAIRS["Pairwise collision/flee/chase checks"]
+    PAIRS --> RENDER["Draw overlays, squares, HUD"]
+    PAUSE -- "Yes" --> MENU["Draw pause overlay and buttons"]
+    MENU --> RENDER
+    RENDER --> FLIP["pygame.display.flip()"]
+    FLIP --> LOOP
+    LOOP -- "No" --> QUIT["pygame.quit() and exit"]
+      </div>
+    </section>
+
+    <section class="card">
+      <span class="pill">Function-Level Call Graph</span>
+      <div class="mermaid">
+graph TD
+    ENTRY["__main__ entry"] --> MAINFN["main()"]
+
+    MAINFN --> SQINIT["Square() constructor"]
+    MAINFN --> EVTS["pygame.event.get()"]
+    MAINFN --> MOVE["Square.move(dt, steps, squares, disabled_squares)"]
+    MAINFN --> BORD["Square.bordercollision(squares, disabled_squares)"]
+    MAINFN --> COLL["Square.squarecollision(other, squares, disabled_squares)"]
+    MAINFN --> FLEE["Square.flee(other)"]
+    MAINFN --> CHASE["Square.chase(other)"]
+    MAINFN --> DRAW["Square.draw(screen)"]
+    MAINFN --> DPAUSE["draw_pause(screen, surface, font, flags)"]
+
+    MOVE --> BYE["Square.bidfarewell(squares, disabled_squares)"]
+    BORD --> CREATE["Square.squarecreation(squares, disabled_squares)"]
+    COLL --> GETA["Square.getrect()"]
+    COLL --> KILL["Square.i_want_to_KILL_you(other)"]
+    COLL --> CREATE
+      </div>
+    </section>
+
+    <section class="card">
+      <span class="pill">Primary Execution Sequence</span>
+      <div class="mermaid">
+sequenceDiagram
+    participant BOOT as "Python Runtime"
+    participant APP as "main()"
+    participant PG as "Pygame"
+    participant SQ as "Square Instances"
+    participant UI as "Pause UI"
+
+    BOOT->>APP: "Call main() from __main__"
+    APP->>PG: "init(), set_mode(), Clock(), SysFont()"
+    APP->>SQ: "Create initial list with Square()"
+
+    loop "Per-frame while running"
+        APP->>PG: "clock.tick(FPS) -> dt"
+        APP->>PG: "poll events"
+
+        alt "Quit event or no squares"
+            APP->>APP: "set running = False"
+        else "Continue running"
+            alt "pause == False"
+                loop "SUBSTEP updates"
+                    APP->>SQ: "move(dt, SUBSTEP, squares, disabled_squares)"
+                    APP->>SQ: "bordercollision(squares, disabled_squares)"
+                end
+                loop "Pairwise square interactions"
+                    APP->>SQ: "squarecollision(other, squares, disabled_squares)"
+                    APP->>SQ: "flee(other)"
+                    APP->>SQ: "chase(other)"
+                end
+            else "pause == True"
+                APP->>UI: "draw_pause(...)"
+                UI-->>APP: "return reset/toggle button rects"
+                APP->>APP: "handle pause-button clicks"
+            end
+
+            APP->>SQ: "draw(screen) for each active square"
+            APP->>PG: "display.flip()"
+        end
+    end
+
+    APP->>PG: "quit()"
+      </div>
+    </section>
+
+    <section class="card">
+      <span class="pill">Utility Script Flow</span>
+      <div class="mermaid">
+flowchart LR
+    START["Script Start"] --> READTPL["Read HTML template file"]
+    READTPL --> BUILD["Build tabs, panels, reviews, diagrams strings"]
+    BUILD --> REPL["Apply placeholder replacements"]
+    REPL --> WRITE["Write docs/code_explorer.html"]
+    WRITE --> END["Script End"]
+      </div>
+    </section>
+  </main>
+
+  <script type="module">
+    import mermaid from "https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs";
+    mermaid.initialize({ startOnLoad: true, theme: "default", securityLevel: "loose" });
+  </script>
+</body>
+</html>

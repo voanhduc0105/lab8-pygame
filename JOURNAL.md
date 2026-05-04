@@ -153,3 +153,14 @@ Finished Code Explorer Generation
 - **Hook Version**: 1.02
 - **Date**: 27-04-2026 14:49
 - **Prompt**: implement the refactoring plan in #file:refactoring.plan.md
+### **New Interaction**
+- **Agent Version**: 2.3
+- **Date**: 27-04-2026 14:55
+- **User**: anh-duc.vo@epita.fr
+- **Prompt**: implement the refactoring plan in #file:refactoring.plan.md
+- **CoPilot Mode**: Agent
+- **CoPilot Model**: GPT-5.4 mini
+- **Socratic Mode**: ON
+- **Changes Made**: Refactored main.py to extract shared square initialization, add named constants, split the game loop into phase helpers, add collision/pause helpers, and guard zero-distance flee/chase math.
+- **Context and Reasons for Changes**: The refactoring plan requested a light, beginner-friendly cleanup that keeps behavior stable while reducing duplication and clarifying the game loop.
+
