@@ -61,7 +61,7 @@ class Square:
 		return pygame.Rect(self.x, self.y, self.square_size, self.square_size)
 
 	@staticmethod
-	def squarecreation(listofsquares: list['Square'], disabledsquares: list['Square']):
+	def squarecreation(listofsquares: list['Square'], disabledsquares: list['Square'], orig_size = None):
 		if len(disabledsquares) == 0:
 			new = Square()
 			listofsquares.append(new)
@@ -108,11 +108,31 @@ class Square:
 		# i will still keep the name cuz its funny
 		self.life -= other.dmg
 		other.life -= self.dmg
+	
+	def eat(self, other:'Square', listofsquares, disabledsquares):
+		# bigger squares will eat smaller ones, ignoring life and dmg
+		# however, we will call collision check insize squarecollision
+		# call for check_collision
+		# if they respawn at same size, that is because the mini squares died too fast
+		if self.square_size == other.square_size:
+			return
+			# just ignore
+		if self.square_size > other.square_size:
+			store_size = other.square_size
+			# first kill it, the other square.
+			other.bidfarewell(listofsquares, disabledsquares)
+			# then respawn it
+			other.squarecreation(listofsquares, disabledsquares, store_size)
+		else:
+			other.eat(self, listofsquares, disabledsquares)
+			# that means the other is bigger, so we swap
 
 	def squarecollision(self, other, listofsquares: list['Square'], disabledsquares: list['Square']):
-		a = self.getrect()
-		b = other.getrect()
-		if a.colliderect(b):
+		# Collision will now use eat.
+		# this if statement will now use check_collision
+		if self.check_collision(other):
+			a = self.getrect()
+			b = other.getrect()
 			self.pulse = 1/3
 			other.pulse = 1/3
 			overlap_x = min(a.right, b.right) - max(a.left, b.left)
@@ -135,7 +155,7 @@ class Square:
 							other.vx *= -1
 							other.vx += random.uniform(-2.0, 2.0) * 60
 						self.x = b.x - a.width
-					self.i_want_to_KILL_you(other)
+					self.eat(other, listofsquares, disabledsquares)
 					return True
 				# self is to the right
 				elif a.x > b.x:
@@ -146,7 +166,7 @@ class Square:
 							other.vx *= -1
 							other.vx += random.uniform(-2.0, 2.0)* 60
 						self.x = b.x + b.width
-					self.i_want_to_KILL_you(other)
+					self.eat(other, listofsquares, disabledsquares)
 					return True
 						
 			else:
@@ -159,7 +179,7 @@ class Square:
 							other.vy *= -1
 							other.vy += random.uniform(-2.0, 2.0)* 60
 						self.y = b.y - a.height
-					self.i_want_to_KILL_you(other)
+					self.eat(other, listofsquares, disabledsquares)
 					return True
 				# self is below
 				elif a.y > b.y:
@@ -170,7 +190,7 @@ class Square:
 							other.vy *= -1
 							other.vy += random.uniform(-2.0, 2.0)* 60
 						self.y = b.y + b.height
-					self.i_want_to_KILL_you(other)
+					self.eat(other, listofsquares, disabledsquares)
 					return True
 	
 	def flee(self, other: 'Square'):
