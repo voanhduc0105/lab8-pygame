@@ -15,6 +15,7 @@ FPS = 120
 SAME_SIZE = 60
 PROPORTION = 0.5 # 50% max
 TRAIL_LENGTH = 30
+TEST_MODE_ON = True
 
 # Substep to do better checks
 SUBSTEP = 4
@@ -349,7 +350,13 @@ class Square:
 						pygame.draw.line(surface, square_color, self.pos_rec[i-1], self.pos_rec[i], 3)
 			pygame.draw.rect(surface, state_color, (self.x, self.y, self.square_size, self.square_size))
 			# the lines should be behind squares
-
+	def speed_check(self):
+		if TEST_MODE_ON is True:
+			speed = math.hypot(self.vx, self.vy)
+			if speed > self.topspd or speed < self.minspd:
+				return False # it is moving at the wrong speed
+			else:
+				return True # correct speed
 	
 	def check_collision(self, other:'Square') -> bool:
 		# colliderect is already enough to check for collision

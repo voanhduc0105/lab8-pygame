@@ -12,3 +12,7 @@
     - Also because the game runs in steps, the length of the list should be trail_elngth*steps
 # Another visual bug for ex 7
     - The trail seems to be a funny ring instead.
+
+
+# Ex 8:
+    - Check if a square is moving at the correct speed probably means that check if the hypot of vx and vy exceeds the max speed of each squares.
