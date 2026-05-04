@@ -14,6 +14,7 @@ SQUARE_COUNT = 15
 FPS = 120
 SAME_SIZE = 60
 PROPORTION = 0.5 # 50% max
+TRAIL_LENGTH = 30
 
 # Substep to do better checks
 SUBSTEP = 4
@@ -58,6 +59,10 @@ class Square:
 		# same scaling logic here
 		self.dmg = 1 * round((0.5 + 0.5 * (self.square_size / (WINDOW_WIDTH // 30))), 2)
 
+		# ex 7
+		self.pos_rec = []
+		self.mini_clock = 0 # for control
+
 	def getrect(self):
 		return pygame.Rect(self.x, self.y, self.square_size, self.square_size)
 
@@ -94,7 +99,8 @@ class Square:
 			disabledsquares[0].max_life = 60*(0.5 + 0.5 * (disabledsquares[0].square_size / (WINDOW_WIDTH // 30)))
 			disabledsquares[0].life = disabledsquares[0].max_life
 			disabledsquares[0].dmg = 1 * round((0.5 + 0.5 * (disabledsquares[0].square_size / (WINDOW_WIDTH // 30))), 2)
-			
+			# ex 7: reset position records
+			disabledsquares[0].pos_rec = []
 			#
 			# Now transfer that item and append it to listofsquares
 			listofsquares.append(disabledsquares.pop(0))
@@ -244,11 +250,29 @@ class Square:
 		else:
 			pass
 
+	def position_record(self):
+		if len(self.pos_rec) > round(TRAIL_LENGTH*(self.square_size/(WINDOW_WIDTH//40)), 0):
+			# because this is recorded every sub_steps. we would want to multiply it
+			# if exceed, destroy the first one
+			# however, smaller squares simply have very long lines, so we want to pipe that
+			self.pos_rec.pop(0)
+		# insert a tuple of (x, y) into the list when records is lt 30
+		# the record should be according to the center
+		true_x = self.x + self.square_size/2
+		true_y = self.y + self.square_size/2
+		self.pos_rec.append((true_x, true_y))
+
 	def move(self, dt: float, steps: int, listofsquares: list['Square'], disabledsquares: list['Square']) -> None:
 		# if the square doesnt exist, simply dont move it or anything.
 		if self.life <= 0:
 			self.bidfarewell(listofsquares, disabledsquares)
 			return
+		# now we record position
+		self.mini_clock += 1
+		if self.mini_clock > 4:
+			self.position_record()
+			self.mini_clock = 0
+
 		self.life -= dt / steps
 		if random.randint(1, 1000) == 67 and self.tired == 0:
 			# At random, squares stops to rest
@@ -289,12 +313,18 @@ class Square:
 		
 		if self.x <= 0 and self.vx <= 0:
 			self.x = WINDOW_WIDTH - self.square_size
+
+			# ex 7: Reset position records
+			self.pos_rec = []
 		if self.x >= WINDOW_WIDTH - self.square_size and self.vx > 0:
 			self.x = 0
+			self.pos_rec = []
 		if self.y <= 0 and self.vy < 0:
 			self.y = WINDOW_HEIGHT - self.square_size
+			self.pos_rec = []
 		if self.y >= WINDOW_HEIGHT - self.square_size and self.vy > 0:
 			self.y = 0
+			self.pos_rec = []
 
 	def draw(self, surface: pygame.Surface) -> None:
 		# Using pulse boost instead of pulse for easier control of brightness. Pulse_boost spans from 0.0 to 1.0	
@@ -306,7 +336,20 @@ class Square:
 			pulse_boost = self.pulse / (1/3)
 			life_ratio = self.life / self.max_life
 			state_color = tuple(min(255, int(c + pulse_boost*50 + (1-life_ratio)*(255-c))) for c in self.color)
+			# ex 7
+			# DRAW IF THERE ARE RECORDS. OTHERWISE DO NOT
+			if len(self.pos_rec) > 0:
+				center = (self.x + self.square_size/2, self.y + self.square_size/2)
+				square_color = self.color
+				# start from center
+				pygame.draw.line(surface, square_color, center, self.pos_rec[0], 3)
+				# only loop if there are more than 1 record
+				if len(self.pos_rec) > 1:
+					for i in range(1, len(self.pos_rec)):
+						pygame.draw.line(surface, square_color, self.pos_rec[i-1], self.pos_rec[i], 3)
 			pygame.draw.rect(surface, state_color, (self.x, self.y, self.square_size, self.square_size))
+			# the lines should be behind squares
+
 	
 	def check_collision(self, other:'Square') -> bool:
 		# colliderect is already enough to check for collision
@@ -316,6 +359,7 @@ class Square:
 			return True
 		else:
 			return False
+	
 
 
 def draw_pause(screen, surface, font, toggle_roe_flag, toggle_vector_flag):
