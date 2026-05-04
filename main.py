@@ -12,6 +12,7 @@ WINDOW_HEIGHT = 720
 BACKGROUND_COLOR = (20, 20, 30)
 SQUARE_COUNT = 15
 FPS = 120
+SAME_SIZE = 60
 
 # Substep to do better checks
 SUBSTEP = 4
@@ -71,8 +72,11 @@ class Square:
 			# please ignore this
 			# however, we dont change the id
 			#
+			
+			# When square die, they are respawneed with the same size
+			disabledsquares[0].square_size = SAME_SIZE
+			# Please let the game run for a while, same size squares will show up
 
-			disabledsquares[0].square_size = random.randint(10, WINDOW_WIDTH//30)
 			disabledsquares[0].x = random.randint(0, WINDOW_WIDTH - disabledsquares[0].square_size)
 			disabledsquares[0].y = random.randint(0, WINDOW_HEIGHT - disabledsquares[0].square_size)
 			disabledsquares[0].topspd = (25/disabledsquares[0].square_size)*3*60
