@@ -16,6 +16,7 @@ SAME_SIZE = 60
 PROPORTION = 0.5 # 50% max
 TRAIL_LENGTH = 30
 TEST_MODE_ON = True
+GROWTH_SPEED = 500
 
 # Substep to do better checks
 SUBSTEP = 4
@@ -63,6 +64,9 @@ class Square:
 		# ex 7
 		self.pos_rec = []
 		self.mini_clock = 0 # for control
+
+		# ex 9
+		self.target_size = self.square_size
 
 	def getrect(self):
 		return pygame.Rect(self.x, self.y, self.square_size, self.square_size)
@@ -134,7 +138,7 @@ class Square:
 			# ex 6: Before this, we wanna make the self bigger, and maybe reset hp too
 			# pipe the value so that the max increase is 50% of its own size
 			# WINDOW_WIDTH//30 is the max size from up top
-			self.square_size += PROPORTION*(store_size/(WINDOW_WIDTH//30))
+			self.target_size += PROPORTION*(store_size/(WINDOW_WIDTH//30))
 			# increase its hp then
 			self.life = self.max_life
 
@@ -273,6 +277,10 @@ class Square:
 		if self.mini_clock > 4:
 			self.position_record()
 			self.mini_clock = 0
+
+
+		if self.square_size < self.target_size:
+			self.square_size = min(self.square_size + (self.target_size-self.square_size)/GROWTH_SPEED, self.target_size)
 
 		self.life -= dt / steps
 		if random.randint(1, 1000) == 67 and self.tired == 0:
