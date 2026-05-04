@@ -254,27 +254,17 @@ class Square:
 			# Bounce on screen edges by reversing direction.
 	
 	def bordercollision(self, listofsquares: list['Square'], disabledsquares: list['Square']):
-		if self.x <= 0 or self.x >= WINDOW_WIDTH - self.square_size:
-			self.pulse = 1/3
-			self.vx *= -1
-			self.x = max(0, min(self.x, WINDOW_WIDTH - self.square_size))
-			if self.cap > len(listofsquares):
-				if random.randint(1, 40-Square.pity) == 1:
-					Square.pity = 0
-					self.squarecreation(listofsquares, disabledsquares)
-				else:
-					Square.pity = min(Square.pity + 1, 9)
-
-		if self.y <= 0 or self.y >= WINDOW_HEIGHT - self.square_size:
-			self.pulse = 1/3
-			self.vy *= -1
-			self.y = max(0, min(self.y, WINDOW_HEIGHT - self.square_size))
-			if self.cap > len(listofsquares):
-				if random.randint(1, 40-Square.pity) == 1:
-					Square.pity = 0
-					self.squarecreation(listofsquares, disabledsquares)
-				else:
-					Square.pity = min(Square.pity + 1, 9)
+		# We wrap the square around it lmao
+		# remove pulse and set position to the other side
+		
+		if self.x <= 0 and self.vx <= 0:
+			self.x = WINDOW_WIDTH - self.square_size
+		if self.x >= WINDOW_WIDTH - self.square_size and self.vx > 0:
+			self.x = 0
+		if self.y <= 0 and self.vy < 0:
+			self.y = WINDOW_HEIGHT - self.square_size
+		if self.y >= WINDOW_HEIGHT - self.square_size and self.vy > 0:
+			self.y = 0
 
 	def draw(self, surface: pygame.Surface) -> None:
 		# Using pulse boost instead of pulse for easier control of brightness. Pulse_boost spans from 0.0 to 1.0	
