@@ -13,6 +13,7 @@ BACKGROUND_COLOR = (20, 20, 30)
 SQUARE_COUNT = 15
 FPS = 120
 SAME_SIZE = 60
+PROPORTION = 0.5 # 50% max
 
 # Substep to do better checks
 SUBSTEP = 4
@@ -119,8 +120,17 @@ class Square:
 			# just ignore
 		if self.square_size > other.square_size:
 			store_size = other.square_size
+
 			# first kill it, the other square.
 			other.bidfarewell(listofsquares, disabledsquares)
+
+			# ex 6: Before this, we wanna make the self bigger, and maybe reset hp too
+			# pipe the value so that the max increase is 50% of its own size
+			# WINDOW_WIDTH//30 is the max size from up top
+			self.square_size += PROPORTION*(store_size/(WINDOW_WIDTH//30))
+			# increase its hp then
+			self.life = self.max_life
+
 			# then respawn it
 			other.squarecreation(listofsquares, disabledsquares, store_size)
 		else:
