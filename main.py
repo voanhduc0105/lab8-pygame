@@ -278,6 +278,16 @@ class Square:
 			state_color = tuple(min(255, int(c + pulse_boost*50 + (1-life_ratio)*(255-c))) for c in self.color)
 			pygame.draw.rect(surface, state_color, (self.x, self.y, self.square_size, self.square_size))
 	
+	def check_collision(self, other:'Square') -> bool:
+		# colliderect is already enough to check for collision
+		square_a = self.getrect()
+		square_b = other.getrect()
+		if square_a.colliderect(square_b):
+			return True
+		else:
+			return False
+
+
 def draw_pause(screen, surface, font, toggle_roe_flag, toggle_vector_flag):
 	pygame.draw.rect(surface, (128, 128, 128, 150), [0,0, WINDOW_WIDTH, WINDOW_HEIGHT])
 	button_size = [300, 75] # width, height
