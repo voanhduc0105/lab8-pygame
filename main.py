@@ -25,13 +25,16 @@ toggle_roe_flag = False
 toggle_vector_flag = False
 
 class Square:
-	cap = 40
+	cap = 60
 	pity = 0
-	def __init__(self) -> None:
+	def __init__(self, size = None) -> None:
 		global ID
 		self.id = ID
 		ID += 1
-		self.square_size = random.randint(10, WINDOW_WIDTH//30)
+		if not size: 
+			self.square_size = random.randint(10, WINDOW_WIDTH//30)
+		else:
+			self.square_size = size
 		self.x = random.randint(0, WINDOW_WIDTH - self.square_size)
 		self.y = random.randint(0, WINDOW_HEIGHT - self.square_size)
 		self.topspd = (25/self.square_size)*3*60
@@ -309,7 +312,18 @@ def main() -> None:
 	pygame.display.set_caption("Extra Random Moving Squares")
 	clock = pygame.time.Clock()
 	font = pygame.font.SysFont(None, 36)
-	squares = [Square() for _ in range(SQUARE_COUNT)]
+	squares = []
+
+	# 5 quares of 25 pixels
+	for i in range(5):
+		squares.append(Square(25))
+	# 10 squares of 10 pixels
+	for i in range(10):
+		squares.append(Square(10))
+	# 30 squares of size 4 pixels
+	for i in range(30):
+		squares.append(Square(4))
+
 	disabled_squares = []
 	running = True
 
