@@ -278,7 +278,7 @@ class Square:
 			self.position_record()
 			self.mini_clock = 0
 
-
+		# ex 9
 		if self.square_size < self.target_size:
 			self.square_size = min(self.square_size + (self.target_size-self.square_size)/GROWTH_SPEED, self.target_size)
 
